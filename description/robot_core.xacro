@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+    <xacro:property name="chassis_length" value="0.52"/>
+    <xacro:property name="chassis_width" value="0.26"/>
+    <xacro:property name="chassis_height" value="0.15"/>
+    <xacro:property name="wheels_lenght_STEERING" value="0.15"/>
+    <xacro:property name="wheels_lenght_atraction" value="0.15"/>
+
+    <xacro:property name="wheel_radius" value="0.035"/>
+    <xacro:property name="wheel_length" value="0.03"/>
+    <xacro:property name="wheel_steering_arm" value="0.01"/>
+    <xacro:property name="wheel_mass" value="0.05"/>
+
+    <xacro:property name="pi" value="3.14159265359"/>
+    <xacro:include filename="inertial_macros.xacro"/>
+ 
+    
+    <!-- COLORS -->
+    <material name="white">
+        <color rgba="1 1 1 1" />
+    </material>
+
+    <material name="orange">
+        <color rgba="1 0.3 0.1 1"/>
+    </material>
+
+    <material name="blue">
+        <color rgba="0.2 0.2 1 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="red">
+        <color rgba="1 0 0 1"/>
+    </material>
+
+<!-- _____________________________________________________________________________________ -->
+   
+
+    <!-- BASE LINK -->
+    <link name="base_link">
+   
+    </link>
+
+    <!-- CHASSIS -->
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="chassis"/>
+        <origin xyz="-${wheels_lenght_STEERING} 0 0"/>
+    </joint>
+
+
+    <link name="chassis">
+        <visual>
+            <origin xyz="0 0 ${chassis_height/2}"/>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${chassis_height/2}"/>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="1" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}">
+            <origin xyz="0 0 ${chassis_height/2}" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+   <!-- _____________________________________________________________________________________ -->
+
+    <!-- PARENT STEERING ARM -->
+    <joint name="parent_steering_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="parent_steering_arm"/>
+        <origin xyz="0 0 0"/>
+        <limit lower="-${pi}" upper="${pi}" effort="100" velocity="3"/>
+        <axis xyz="0 0 1"/>
+   </joint>
+
+    <link name="parent_steering_arm">
+        <visual>
+            <geometry>
+                <box size="${wheel_steering_arm*4} ${wheel_steering_arm} ${wheel_steering_arm}"/>
+            </geometry>
+        <material name="white"/>
+        </visual>
+    </link>
+
+    <!-- LEFT STEERING ARM -->
+    <link name="left_steering_arm">
+        <visual>
+            <geometry>
+                <box size="${wheel_steering_arm*4} ${wheel_steering_arm} ${wheel_steering_arm}"/>
+            </geometry>
+        <material name="white"/>
+        </visual>
+    </link>
+
+    <joint name="left_steering_joint" type="fixed">
+        <parent link="parent_steering_arm"/>
+        <child link="left_steering_arm"/>
+        <origin xyz="0 -${chassis_width/2+wheel_steering_arm/2} 0"/>
+    </joint>
+
+    <!-- LEFT FRONT WHEEL -->
+    <link name="left_front_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <gazebo reference="left_wheel">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    
+    <joint name="left_front_wheel_joint" type="continuous">
+        <parent link="left_steering_arm"/>
+        <child link="left_front_wheel"/>
+        <origin xyz="0 -${wheel_steering_arm/2 + wheel_length/2} 0" rpy="-${pi/2} 0 0" />
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <!-- RIGHT STEERING ARM -->
+    <link name="right_steering_arm">
+        <visual>
+            <geometry>
+                <box size="${wheel_steering_arm*4} ${wheel_steering_arm} ${wheel_steering_arm}"/>
+            </geometry>
+        <material name="white"/>
+        </visual>
+    </link>
+
+    <joint name="right_steering_joint" type="fixed">
+        <parent link="parent_steering_arm"/>
+        <child link="right_steering_arm"/>
+        <origin xyz="0 ${chassis_width/2+wheel_steering_arm/2} 0"/>
+    </joint>
+
+    <!-- RIGHT FRONT WHEEL -->
+    <link name="right_front_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <gazebo reference="right_wheel">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <joint name="right_front_wheel_joint" type="continuous">
+        <parent link="right_steering_arm"/>
+        <child link="right_front_wheel"/>
+        <origin xyz="0 ${wheel_steering_arm/2 + wheel_length/2} 0" rpy="${pi/2} 0 0" />
+        <axis xyz="0 0 1"/>
+    </joint>
+
+
+<!-- _____________________________________________________________________________________ -->
+   
+    <!-- PARENT TRACTION ARM -->
+    <joint name="parent_traction_joint" type="continuous">
+        <parent link="chassis"/>
+        <child link="parent_traction_arm"/>
+        <origin xyz="-${wheels_lenght_atraction} 0 0" rpy="${pi/2} 0 0" />
+        <axis xyz="0 0 1"/>
+   </joint>
+
+    <link name="parent_traction_arm">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+    </link>
+
+    <!-- RIGHT REAR WHEEL -->
+    <link name="right_rear_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="right_rear_wheel_joint" type="fixed">
+        <parent link="parent_traction_arm"/>
+        <child link="right_rear_wheel"/>
+        <origin xyz=" 0 0 ${chassis_width/2+wheel_length/2}" rpy="0 0 0" />
+    </joint>
+
+
+    <!-- LEFT REAR WHEEL -->
+    <link name="left_rear_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${wheel_radius}"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_length}" radius="${wheel_radius}">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="left_rear_wheel_joint" type="fixed">
+        <parent link="parent_traction_arm"/>
+        <child link="left_rear_wheel"/>
+        <origin xyz=" 0 0 -${chassis_width/2+wheel_length/2}" rpy="0 0 0" />
+    </joint>
+
+
+</robot>
